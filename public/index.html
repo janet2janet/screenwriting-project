@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SCREENWRITER // GAME MODE</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+</head>
+<body>
+
+  <!-- ── HUD ── -->
+  <header class="hud">
+    <div class="hud-logo">🎬 SCREENWRITER</div>
+
+    <div class="hud-stats">
+      <div class="stat">
+        <span class="stat-label">WORDS</span>
+        <span class="stat-value" id="word-count">0</span>
+      </div>
+      <div class="stat">
+        <span class="stat-label">PAGES</span>
+        <span class="stat-value" id="page-count">0</span>
+      </div>
+      <div class="stat">
+        <span class="stat-label">ELEMENTS</span>
+        <span class="stat-value" id="element-count">0</span>
+      </div>
+    </div>
+
+    <div class="hud-actions">
+      <button class="btn btn-save" id="save-indicator">✓ SAVED</button>
+      <button class="btn btn-projects" id="projects-btn">📁 PROJECTS</button>
+      <button class="btn btn-proofread" id="proofread-btn">🤖 PROOFREAD</button>
+      <button class="btn btn-export" id="export-pdf-btn">📄 PDF</button>
+      <button class="btn btn-export" id="export-docx-btn">📝 DOCX</button>
+    </div>
+  </header>
+
+  <!-- ── MAIN ── -->
+  <main class="main-layout">
+
+    <!-- ── LEFT SIDEBAR ── -->
+    <aside class="element-sidebar">
+      <div class="sidebar-label">ELEMENTS</div>
+
+      <button class="sidebar-btn" data-type="scene-heading">
+        <span class="sidebar-btn-icon">🎬</span>
+        <div>
+          <div class="sidebar-btn-label">SCENE HDG</div>
+          <div class="sidebar-btn-hint">INT./EXT.</div>
+        </div>
+      </button>
+
+      <button class="sidebar-btn" data-type="action">
+        <span class="sidebar-btn-icon">👁️</span>
+        <div>
+          <div class="sidebar-btn-label">ACTION</div>
+          <div class="sidebar-btn-hint">What we see</div>
+        </div>
+      </button>
+
+      <button class="sidebar-btn" data-type="character">
+        <span class="sidebar-btn-icon">🎭</span>
+        <div>
+          <div class="sidebar-btn-label">CHARACTER</div>
+          <div class="sidebar-btn-hint">ALL CAPS</div>
+        </div>
+      </button>
+
+      <button class="sidebar-btn" data-type="dialogue">
+        <span class="sidebar-btn-icon">💬</span>
+        <div>
+          <div class="sidebar-btn-label">DIALOGUE</div>
+          <div class="sidebar-btn-hint">What they say</div>
+        </div>
+      </button>
+
+      <button class="sidebar-btn" data-type="parenthetical">
+        <span class="sidebar-btn-icon">🎵</span>
+        <div>
+          <div class="sidebar-btn-label">PAREN.</div>
+          <div class="sidebar-btn-hint">(tone/action)</div>
+        </div>
+      </button>
+
+      <button class="sidebar-btn" data-type="transition">
+        <span class="sidebar-btn-icon">⚡</span>
+        <div>
+          <div class="sidebar-btn-label">TRANSITION</div>
+          <div class="sidebar-btn-hint">CUT TO:</div>
+        </div>
+      </button>
+
+      <div class="sidebar-tip">Tip: type <kbd>@</kbd> to<br>insert inline</div>
+    </aside>
+
+    <!-- ── CONTENT ── -->
+    <div class="content-area">
+
+      <div class="title-area">
+        <input type="text" id="screenplay-title" class="title-input" placeholder="UNTITLED SCREENPLAY" autocomplete="off" spellcheck="false" />
+      </div>
+
+      <div class="editor-container">
+        <div class="screenplay-editor" id="editor"></div>
+      </div>
+
+    </div>
+
+  </main>
+
+  <!-- ── PROOFREAD PANEL ── -->
+  <aside class="proofread-panel" id="proofread-panel">
+    <div class="panel-header">
+      <span>🤖 AI PROOFREADER</span>
+      <button class="close-panel" id="close-panel">✕</button>
+    </div>
+    <div class="panel-content" id="proofread-content">
+      <div class="panel-empty">Hit <strong>🤖 PROOFREAD</strong> to get Claude's feedback on your screenplay.</div>
+    </div>
+  </aside>
+
+  <!-- ── @ POPUP ── -->
+  <div class="at-popup" id="at-popup">
+    <div class="at-popup-title">INSERT ELEMENT</div>
+    <button class="at-popup-item" data-type="scene-heading"><span class="at-popup-icon">🎬</span><span class="at-popup-name">Scene Heading</span><span class="at-popup-hint">INT./EXT.</span></button>
+    <button class="at-popup-item" data-type="action"><span class="at-popup-icon">👁️</span><span class="at-popup-name">Action</span><span class="at-popup-hint">what we see</span></button>
+    <button class="at-popup-item" data-type="character"><span class="at-popup-icon">🎭</span><span class="at-popup-name">Character</span><span class="at-popup-hint">ALL CAPS</span></button>
+    <button class="at-popup-item" data-type="dialogue"><span class="at-popup-icon">💬</span><span class="at-popup-name">Dialogue</span><span class="at-popup-hint">what they say</span></button>
+    <button class="at-popup-item" data-type="parenthetical"><span class="at-popup-icon">🎵</span><span class="at-popup-name">Parenthetical</span><span class="at-popup-hint">(tone)</span></button>
+    <button class="at-popup-item" data-type="transition"><span class="at-popup-icon">⚡</span><span class="at-popup-name">Transition</span><span class="at-popup-hint">CUT TO:</span></button>
+  </div>
+
+  <!-- ── ADD MENU (full overlay, keep for mobile) ── -->
+  <div class="add-menu-overlay" id="add-menu">
+    <div class="add-menu-container">
+      <div class="add-menu-title">✦ SELECT ELEMENT TYPE ✦</div>
+      <div class="add-menu-grid">
+
+        <button class="element-card" data-type="scene-heading">
+          <div class="card-icon">🎬</div>
+          <div class="card-name">SCENE HEADING</div>
+          <div class="card-desc">Where & when a scene takes place.<br>e.g. <code>INT. COFFEE SHOP - DAY</code></div>
+          <div class="card-badge">AUTO CAPS</div>
+        </button>
+
+        <button class="element-card" data-type="action">
+          <div class="card-icon">👁️</div>
+          <div class="card-name">ACTION</div>
+          <div class="card-desc">What the audience sees on screen. Present tense, visual only.</div>
+          <div class="card-badge">FULL WIDTH</div>
+        </button>
+
+        <button class="element-card" data-type="character">
+          <div class="card-icon">🎭</div>
+          <div class="card-name">CHARACTER</div>
+          <div class="card-desc">Who is about to speak. Always above dialogue.<br>e.g. <code>JANET</code></div>
+          <div class="card-badge">AUTO CAPS • CENTERED</div>
+        </button>
+
+        <button class="element-card" data-type="dialogue">
+          <div class="card-icon">💬</div>
+          <div class="card-name">DIALOGUE</div>
+          <div class="card-desc">What the character says out loud. Always follows a character name.</div>
+          <div class="card-badge">INDENTED</div>
+        </button>
+
+        <button class="element-card" data-type="parenthetical">
+          <div class="card-icon">🎵</div>
+          <div class="card-name">PARENTHETICAL</div>
+          <div class="card-desc">A brief tone or action mid-dialogue.<br>e.g. <code>(whispering)</code></div>
+          <div class="card-badge">AUTO ( )</div>
+        </button>
+
+        <button class="element-card" data-type="transition">
+          <div class="card-icon">⚡</div>
+          <div class="card-name">TRANSITION</div>
+          <div class="card-desc">How we move between scenes.<br>e.g. <code>CUT TO: / FADE OUT.</code></div>
+          <div class="card-badge">AUTO CAPS • RIGHT</div>
+        </button>
+
+      </div>
+      <button class="cancel-btn" id="cancel-add">CANCEL</button>
+    </div>
+  </div>
+
+  <!-- ── PROJECTS MODAL ── -->
+  <div class="projects-overlay" id="projects-overlay">
+    <div class="projects-container">
+      <div class="projects-header">
+        <span>📁 MY SCREENPLAYS</span>
+        <button class="close-projects" id="close-projects">✕</button>
+      </div>
+      <div class="projects-toolbar">
+        <button class="btn btn-dark" id="new-project-btn">+ NEW SCREENPLAY</button>
+        <label class="btn btn-outline-dark" id="import-label">
+          📂 OPEN FILE
+          <input type="file" id="import-file-input" accept=".json" style="display:none">
+        </label>
+      </div>
+      <div class="projects-list" id="projects-list"></div>
+    </div>
+  </div>
+
+  <!-- ── FORMAT TOOLTIP ── -->
+  <div class="format-tooltip" id="format-tooltip"></div>
+
+  <script src="script.js"></script>
+</body>
+</html>
