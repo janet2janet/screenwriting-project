@@ -479,8 +479,9 @@ function onInput(e) {
   const type = div.dataset.type;
 
   // @ trigger — strip the @ and open popup
-  if (div.textContent.endsWith('@')) {
-    div.textContent = div.textContent.slice(0, -1);
+  // trimEnd() handles browsers that append a trailing \n via a <br> in contenteditable
+  if (div.textContent.trimEnd().endsWith('@')) {
+    div.textContent = div.textContent.trimEnd().slice(0, -1);
     placeCursorAtEnd(div);
     openAtPopup(div);
 
@@ -687,6 +688,7 @@ closePanel.addEventListener('click', () => proofPanel.classList.remove('open'));
 
 exportPdfBtn.addEventListener('click', () => {
   if (!elements.length) { alert('Nothing to export!'); return; }
+  if (!window.jspdf) { alert('PDF library failed to load. Check your internet connection and reload the page.'); return; }
 
   const { jsPDF } = window.jspdf;
   const doc = new jsPDF({ unit: 'pt', format: 'letter' });
