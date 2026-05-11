@@ -690,64 +690,68 @@ exportPdfBtn.addEventListener('click', () => {
   if (!elements.length) { alert('Nothing to export!'); return; }
   if (!window.jspdf) { alert('PDF library failed to load. Check your internet connection and reload the page.'); return; }
 
-  const { jsPDF } = window.jspdf;
-  const doc = new jsPDF({ unit: 'pt', format: 'letter' });
+  try {
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF({ unit: 'pt', format: 'letter' });
 
-  const PW = 612, PH = 792, ML = 108, MR = 72, MT = 72, MB = 72;
-  const CW = PW - ML - MR, FS = 12, LH = 15;
+    const PW = 612, PH = 792, ML = 108, MR = 72, MT = 72, MB = 72;
+    const CW = PW - ML - MR, FS = 12, LH = 15;
 
-  doc.setFont('Courier', 'bold');
-  doc.setFontSize(20);
-  doc.text((titleInput.value || 'UNTITLED SCREENPLAY').toUpperCase(), PW / 2, PH / 2 - 30, { align: 'center' });
-  doc.setFontSize(11);
-  doc.setFont('Courier', 'normal');
-  doc.text('written with SCREENWRITER', PW / 2, PH / 2 + 10, { align: 'center' });
+    doc.setFont('courier', 'bold');
+    doc.setFontSize(20);
+    doc.text((titleInput.value || 'UNTITLED SCREENPLAY').toUpperCase(), PW / 2, PH / 2 - 30, { align: 'center' });
+    doc.setFontSize(11);
+    doc.setFont('courier', 'normal');
+    doc.text('written with SCREENWRITER', PW / 2, PH / 2 + 10, { align: 'center' });
 
-  doc.addPage();
-  let y = MT;
-  doc.setFont('Courier', 'normal');
-  doc.setFontSize(FS);
+    doc.addPage();
+    let y = MT;
+    doc.setFont('courier', 'normal');
+    doc.setFontSize(FS);
 
-  const newPageIfNeeded = (need = LH * 2) => {
-    if (y + need > PH - MB) { doc.addPage(); y = MT; }
-  };
+    const newPageIfNeeded = (need = LH * 2) => {
+      if (y + need > PH - MB) { doc.addPage(); y = MT; }
+    };
 
-  elements.forEach(el => {
-    if (!el.text && el.text !== '') return;
-    newPageIfNeeded();
+    elements.forEach(el => {
+      if (!el.text && el.text !== '') return;
+      newPageIfNeeded();
 
-    let x = ML, mw = CW, text = el.text || '', bold = false;
+      let x = ML, mw = CW, text = el.text || '', bold = false;
 
-    switch (el.type) {
-      case 'scene-heading': bold = true; text = text.toUpperCase(); y += LH * 0.7; break;
-      case 'character':     text = text.toUpperCase(); x = ML + CW * 0.36; mw = CW * 0.64; y += LH * 0.4; break;
-      case 'dialogue':      x = ML + 80; mw = CW - 160; break;
-      case 'parenthetical': x = ML + 120; mw = CW - 200;
-        if (!text.startsWith('(')) text = '(' + text;
-        if (!text.endsWith(')'))   text = text + ')';
-        break;
-      case 'transition':
-        text = text.toUpperCase(); y += LH * 0.4;
-        doc.setFont('Courier', 'normal');
-        x = PW - MR - doc.getTextWidth(text);
-        mw = doc.getTextWidth(text) + 1;
-        break;
+      switch (el.type) {
+        case 'scene-heading': bold = true; text = text.toUpperCase(); y += LH * 0.7; break;
+        case 'character':     text = text.toUpperCase(); x = ML + CW * 0.36; mw = CW * 0.64; y += LH * 0.4; break;
+        case 'dialogue':      x = ML + 80; mw = CW - 160; break;
+        case 'parenthetical': x = ML + 120; mw = CW - 200;
+          if (!text.startsWith('(')) text = '(' + text;
+          if (!text.endsWith(')'))   text = text + ')';
+          break;
+        case 'transition':
+          text = text.toUpperCase(); y += LH * 0.4;
+          doc.setFont('courier', 'normal');
+          x = PW - MR - doc.getTextWidth(text);
+          mw = doc.getTextWidth(text) + 1;
+          break;
+      }
+
+      doc.setFont('courier', bold ? 'bold' : 'normal');
+      doc.splitTextToSize(text, mw).forEach(line => { newPageIfNeeded(); doc.text(line, x, y); y += LH; });
+      if (['scene-heading', 'transition'].includes(el.type)) y += LH * 0.5;
+    });
+
+    const pageCount = doc.getNumberOfPages();
+    for (let i = 2; i <= pageCount; i++) {
+      doc.setPage(i);
+      doc.setFont('courier', 'normal');
+      doc.setFontSize(10);
+      doc.text(`${i - 1}.`, PW - MR, MT - 20, { align: 'right' });
     }
 
-    doc.setFont('Courier', bold ? 'bold' : 'normal');
-    doc.splitTextToSize(text, mw).forEach(line => { newPageIfNeeded(); doc.text(line, x, y); y += LH; });
-    if (['scene-heading', 'transition'].includes(el.type)) y += LH * 0.5;
-  });
-
-  const pageCount = doc.getNumberOfPages();
-  for (let i = 2; i <= pageCount; i++) {
-    doc.setPage(i);
-    doc.setFont('Courier', 'normal');
-    doc.setFontSize(10);
-    doc.text(`${i - 1}.`, PW - MR, MT - 20, { align: 'right' });
+    doc.save((titleInput.value || 'screenplay').toLowerCase().replace(/\s+/g, '_') + '.pdf');
+  } catch (err) {
+    alert('PDF export failed: ' + err.message);
   }
-
-  doc.save((titleInput.value || 'screenplay').toLowerCase().replace(/\s+/g, '_') + '.pdf');
 });
 
 // ── DOCX export ────────────────────────────────────────────
@@ -771,8 +775,10 @@ exportDocxBtn.addEventListener('click', async () => {
     const a    = document.createElement('a');
     a.href     = url;
     a.download = (titleInput.value || 'screenplay').toLowerCase().replace(/\s+/g, '_') + '.docx';
+    document.body.appendChild(a);
     a.click();
-    URL.revokeObjectURL(url);
+    document.body.removeChild(a);
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
   } catch (err) {
     alert('DOCX export failed: ' + err.message);
   }
