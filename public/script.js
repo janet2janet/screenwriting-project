@@ -748,7 +748,16 @@ exportPdfBtn.addEventListener('click', () => {
       doc.text(`${i - 1}.`, PW - MR, MT - 20, { align: 'right' });
     }
 
-    doc.save((titleInput.value || 'screenplay').toLowerCase().replace(/\s+/g, '_') + '.pdf');
+    const filename = (titleInput.value || 'screenplay').toLowerCase().replace(/\s+/g, '_') + '.pdf';
+    const blob = doc.output('blob');
+    const url  = URL.createObjectURL(blob);
+    const a    = document.createElement('a');
+    a.href     = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
   } catch (err) {
     alert('PDF export failed: ' + err.message);
   }
